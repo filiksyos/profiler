@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Wiki-style custom styles */
+.wiki-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.wiki-infobox {
+  float: right;
+  margin: 0 0 1rem 1rem;
+  width: 300px;
+  border: 1px solid #a2a9b1;
+  background-color: #f8f9fa;
+  padding: 1rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .wiki-infobox {
+    background-color: #1a1a1a;
+    border-color: #3a3a3a;
+  }
+}
+
+.wiki-section {
+  margin-bottom: 2rem;
+}
+
+.wiki-heading {
+  border-bottom: 1px solid #a2a9b1;
+  padding-bottom: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .wiki-heading {
+    border-color: #3a3a3a;
+  }
+}
