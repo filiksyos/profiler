@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateText } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 
 export async function POST(req: NextRequest) {
+  let text: string | undefined;
+  
   try {
     const { name, searchResults } = await req.json();
 
@@ -22,9 +24,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create OpenRouter client using OpenAI SDK
-    const openrouter = createOpenAI({
-      baseURL: 'https://openrouter.ai/api/v1',
+    // Create OpenRouter client
+    const openrouter = createOpenRouter({
       apiKey: openRouterApiKey,
     });
 
@@ -36,8 +37,8 @@ export async function POST(req: NextRequest) {
       .join('\n\n');
 
     // Generate profile using AI
-    const { text } = await generateText({
-      model: openrouter('openai/gpt-4o'),
+    const result = await generateText({
+      model: openrouter.chat('openai/gpt-4o'),
       prompt: `You are creating a fandom wiki-style profile page for a person named "${name}". Based on the following web search results, generate a detailed, engaging profile.
 
 Search Results:
@@ -57,14 +58,29 @@ Create a comprehensive profile in JSON format with these sections:
 Make it engaging and wiki-like. Use markdown formatting for lists, bold text, and structure. Return ONLY valid JSON, no additional text.`,
     });
 
-    // Parse the AI response
-    const profile = JSON.parse(text);
+    text = result.text;
+
+    // Extract JSON from response (might be wrapped in markdown code blocks)
+    let jsonText = text.trim();
+    
+    // Remove markdown code block markers if present
+    jsonText = jsonText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '');
+    
+    // Try to find JSON object in the text if it's not pure JSON
+    const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      jsonText = jsonMatch[0];
+    }
+    
+    // Parse the JSON response
+    const profile = JSON.parse(jsonText);
 
     return NextResponse.json(profile);
   } catch (error) {
     console.error('Profile generation error:', error);
+    console.error('Response text:', text?.substring(0, 500));
     return NextResponse.json(
-      { error: 'Failed to generate profile' },
+      { error: 'Failed to generate profile', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
